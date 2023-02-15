@@ -16,6 +16,9 @@ def list_files(root_dir, suffix, recursion=True):
 
     return ret
 
+def is_format(suffix):
+    return suffix.index(".")==0
+
 def list_files_mul(root_dir, suffix, recursion=True):
     if(isinstance(suffix,str)):
         suffix=suffix.split(",")
@@ -25,7 +28,7 @@ def list_files_mul(root_dir, suffix, recursion=True):
         if recursion and os.path.isdir(path):
             ret.extend(list_files_mul(path, suffix))
         for suf in suffix:
-            if os.path.isfile(path) and filename.endswith(suf):
+            if os.path.isfile(path) and ((is_format(suf) and filename.endswith(suf)) or filename==suf):
                 ret.append(path)
     return ret
 

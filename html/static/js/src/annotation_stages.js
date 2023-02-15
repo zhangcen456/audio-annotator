@@ -129,7 +129,32 @@ StageThreeView.prototype = {
         var annotation = this.createAnnotationTags(annotationTags);
         $('.tag_container', this.dom).append([annotation, proximity]);
 
-        this.message.text(wavText)
+        this.message.empty();
+        var my=this
+        this.msg_txt=wavText.split("||")
+        // this.message.text(wavText)
+        //前一句和后一句的切换按钮
+        this.msg_idx=0
+        var msg=$('<div>',{
+            class: 'msg text',
+            text: this.msg_txt[this.msg_idx]
+        })
+        var msgbtn1 = $('<button>', {
+            class: 'msg btn',
+            text: '上一句'
+        });
+        msgbtn1.click(function(){$(my).trigger('prev-sent');});
+        var msgbtn2 = $('<button>', {
+            class: 'msg btn',
+            text: '下一句'
+        });
+        msgbtn2.click(function(){$(my).trigger('next-sent');});
+        this.message.append([msg,msgbtn1,msgbtn2])
+    },
+
+    showCurMsg: function(){
+        var msg=$(".msg.text")
+        msg.text(this.msg_txt[this.msg_idx])
     },
 
     // Create proximity tag elements
@@ -605,7 +630,7 @@ AnnotationStages.prototype = {
         // Add the action to the event list
         this.trackEvent('delete', region.id);
         // Add the region to the deleted list
-        this.deletedAnnotations.push(region);
+        // this.deletedAnnotations.push(region);
         // If that region was currently selected, switch back to stage 1
         if (region === this.currentRegion) {
             this.updateStage(1);
@@ -824,7 +849,7 @@ AnnotationStages.prototype = {
             eventData.number_tiles = (this.wavesurfer.params.feedback === 'hiddenImage') ?
                                         Math.floor(this.previousF1Score * 10) : 0;
         }
-        this.events.push(eventData);
+        // this.events.push(eventData);
     },
 
     // Return a list of actions the user took while annotating this clip
@@ -841,6 +866,16 @@ AnnotationStages.prototype = {
     //change audio rate
     changeAudioRate: function(event,data){
         this.wavesurfer.setPlaybackRate(data)
+    },
+
+    //show next and previous sentence
+    showPrevSent: function(){
+        this.stageThreeView.msg_idx=Math.max(0,this.stageThreeView.msg_idx-1)
+        this.stageThreeView.showCurMsg()
+    },
+    showNextSent: function(){
+        this.stageThreeView.msg_idx=Math.min(this.stageThreeView.msg_idx+1,this.stageThreeView.msg_txt.length-1)
+        this.stageThreeView.showCurMsg()
     },
 
     // Attach event handlers for wavesurfer events
@@ -877,5 +912,7 @@ AnnotationStages.prototype = {
     addStageThreeEvents: function() {
         $(this.stageThreeView).on('change-tag', this.updateRegion.bind(this));
         $(this.stageThreeView).on('change-rate', this.changeAudioRate.bind(this));
+        $(this.stageThreeView).on('prev-sent',this.showPrevSent.bind(this));
+        $(this.stageThreeView).on('next-sent',this.showNextSent.bind(this));
     },   
 };

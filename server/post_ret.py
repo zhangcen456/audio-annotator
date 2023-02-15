@@ -27,8 +27,10 @@ class PostRet(BaseReqHandler):
             rel_wav_path = get_relative_path("/wavs", ret_json["task"]["url"])
             wav_path = os.path.join(self.wav_dir, rel_wav_path)
             wav_json_path = wav_path + ".json"
-            with open(wav_json_path, "w+", encoding="utf-8") as f:
-                json.dump(ret_json, f, ensure_ascii=False)
+            record_path=wav_path+".record"
+            # with open(wav_json_path, "w+", encoding="utf-8") as f:
+            #     json.dump(ret_json, f, ensure_ascii=False)
+            save_json(wav_json_path,record_path,ret_json)
             resp["msg"] = "保存成功"
         except Exception as e:
             logger.error(e)
@@ -36,3 +38,16 @@ class PostRet(BaseReqHandler):
             resp["msg"] = e.__str__()
 
         self.write(json.dumps(resp))
+
+def save_json(json_path,txt_path,ret_json):
+    if(len(ret_json['annotations'])>10):
+        annos=ret_json['annotations']
+        with open(txt_path,"a") as f:
+            save_annos=annos[:-10]
+            for anno in save_annos:
+                json.dump(anno,f)
+                f.write("\n")
+        ret_json['annotations']=annos[-10:]
+
+    with open(json_path, "w+", encoding="utf-8") as f:
+        json.dump(ret_json, f, ensure_ascii=False)
